@@ -1,0 +1,50 @@
+import pandas as pd
+import nltk
+from nltk.sentiment.vader import SentimentIntensityAnalyzer
+from nltk.corpus import stopwords
+from nltk.tokenize import word_tokenize
+from nltk.stem import WordNetLemmatizer
+import nltk
+nltk.download('all')
+nltk.download('punkt')
+nltk.download('stopwords')
+nltk.download('wordnet')
+nltk.download('vader_lexicon')
+
+combined_reviews = pd.read_csv(r'C:\path\combined_pos_neg_revs.csv', dtype={
+    'Combined_Reviews': 'str',
+    'Target': 'int'
+}).dropna()
+
+def preprocess_text(text):
+    tokens = word_tokenize(text.lower())
+    filtered_tokens = [token for token in tokens if token not in stopwords.words('english')]
+    lemmatizer = WordNetLemmatizer()
+    lemmatized_tokens = [lemmatizer.lemmatize(token) for token in filtered_tokens]
+    processed_text = ' '.join(lemmatized_tokens)
+    return processed_text
+combined_reviews['Combined_Reviews'] = combined_reviews['Combined_Reviews'].apply(preprocess_text)
+
+analyzer = SentimentIntensityAnalyzer()
+
+def get_sentiment(text):
+    scores = analyzer.polarity_scores(text)
+    if scores['compound'] >= 0.1:
+        sentiment = "positive"
+    elif scores['compound'] > -0.1 and scores['compound'] < 0.1:
+        sentiment = "neutral"
+    else:
+        sentiment = "negative"
+    return sentiment
+def get_scores(text):
+    scores = analyzer.polarity_scores(text)
+    return scores
+
+combined_reviews['sentiment'] = combined_reviews['Combined_Reviews'].apply(get_sentiment)
+combined_reviews['scores'] = combined_reviews['Combined_Reviews'].apply(get_scores)
+combined_reviews['positive_score'] = combined_reviews['scores'].apply(lambda txt: txt['pos'])
+combined_reviews['neutral_score'] = combined_reviews['scores'].apply(lambda txt: txt['neu'])
+combined_reviews['negative_score'] = combined_reviews['scores'].apply(lambda txt: txt['neg'])
+combined_reviews['compound_score'] = combined_reviews['scores'].apply(lambda txt: txt['compound'])
+
+combined_reviews.to_csv(r'C:\path\combined_reviews_sent_analysis_full_separated.csv')
