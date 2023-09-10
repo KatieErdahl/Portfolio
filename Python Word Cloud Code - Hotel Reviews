@@ -1,0 +1,78 @@
+from typing import DefaultDict
+from os import path
+import spacy
+nlp = spacy.load("en_core_web_sm")
+import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
+import warnings
+warnings.filterwarnings("ignore")
+from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.feature_extraction import text
+from spacytextblob.spacytextblob import SpacyTextBlob
+spacy_text_blob = SpacyTextBlob(nlp)
+nlp.add_pipe("spacytextblob")
+from PIL import Image
+from wordcloud import WordCloud
+
+hotelrevs = pd.read_csv(r'C:\path\hotelrevsb13.csv', index_col = 0, dtype={
+    'Review_Date':'string',
+    'Review_Month':'int',
+    'Review_Day':'int',
+    'Review_Year':'int',
+    'Reviewer_Nationality':'string',
+    'Review_Total_Negative_Word_Counts':'int',
+    'Review_Total_Positive_Word_Counts':'int',
+    'Total_Number_of_Reviews_Reviewer_Has_Given':'int',
+    'Review_Sentiment':'float',
+    'Reviewer_Score':'float',
+    'Days_Since_Review':'int',
+    'Group_Type':'float',
+    'Trip_Type':'float',
+    'Room_Type':'float',
+    'With_a_Pet':'bool',
+    'Nights_Stayed':'int',
+    'Mobile_Device_Submit':'bool',
+    'Negative_Review':'string',
+    'Positive_Review':'string'
+}).dropna()
+
+
+pos_hotelrevs = hotelrevs['Positive_Review'].tolist()
+pos_hotelrevs_str = " ".join(pos_hotelrevs)
+neg_hotelrevs = hotelrevs['Negative_Review'].tolist()
+neg_hotelrevs_str = " ".join(neg_hotelrevs)
+custom_stopwords = ["no", "i", "negative", "positive", "by", "gave" "one", "have", "way", "said", "u", "got", "you", "like", "your", "get", "my", "or", "had", "just", "next", "the", "be", "and", "very", "to", "of", "in", "we", "with", "it", "for", "not", "so", "but", "on", "our", "from", "at", "this", "that", "all","us","an","is","up","has","did","about","make","some","its","if","also","will"]
+stops = nlp.Defaults.stop_words.union(custom_stopwords)
+
+wordcloud_pos = WordCloud(
+    width = 800,
+    height = 400,
+    stopwords = stops,
+    background_color = 'white',
+    max_font_size = 100,
+    min_font_size = 10,
+    relative_scaling = 0.5,
+    max_words = 100
+).generate(pos_hotelrevs_str)
+
+wordcloud_neg = WordCloud(
+    width = 800,
+    height = 400,
+    stopwords = stops,
+    background_color = 'white',
+    max_font_size = 100,
+    min_font_size = 10,
+    relative_scaling = 0.5,
+    max_words = 100
+).generate(neg_hotelrevs_str)
+
+plt.figure(figsize=(10,5))
+plt.imshow(wordcloud_pos, interpolation='bilinear')
+plt.axis('off')
+plt.show()
+
+plt.figure(figsize=(10,5))
+plt.imshow(wordcloud_neg, interpolation='bilinear')
+plt.axis('off')
+plt.show()
