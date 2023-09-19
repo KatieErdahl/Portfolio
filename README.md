@@ -18,3 +18,5 @@ KPI Dashboard - Sales Data: Creating data visualizations in Excel, there is a dr
 Python Sentiment Analysis Code - Hotel Reviews: Natural language processing and performing accurate sentiment analysis on customer reviews.
 
 Python Word Cloud Code - Hotel Reviews: Creating two word clouds, one from the positive reviews and one from the negative reviews. Removed stopwords and adjusted settings so that they looked right. The word clouds highlight keywords from each set of reviews, with more frequently occuring words being displayed in larger fonts.
+
+Largest Guest Segments Visio - Hotel Reviews: Creating informative visualizations using Microsoft Visio.
