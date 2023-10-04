@@ -21,4 +21,6 @@ Largest Guest Segments Visio - Hotel Reviews: Creating informative visualization
 
 KPI Dashboard - Sales Data: Creating data visualizations in Excel, there is a dropdown menu in cell G6 to select the Month-Year. The sheet will change to show the figures for that month.
 
+Edgware Data Cleaned - Best Western Reviews: Cleaning data from Best Western Reviews dataset and storing data generated through python code, as well as using the new data to generate additional data to help with analysis.
+
 Edgware Hotel Analysis - Best Western Reviews: Reporting actionable insights meant to improve the hotel's average score, created data visualizations in Excel and Visio.
