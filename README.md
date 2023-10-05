@@ -1,9 +1,9 @@
 # Portfolio
 I created this portfolio to show my skills. 
 
-I used multiple datasets to create this portfolio, so I have titled documents accordingly: "Document Name - Dataset Name".
+I used multiple datasets to create this portfolio, so I have titled documents accordingly: "Document Name - Dataset Name". 
 
-The Hotel Reviews dataset was my first project, the Best Western Reviews dataset is my ongoing project, and any other datasets are side projects meant to show different abilities.
+The Hotel Reviews dataset was my first project, the Best Western Reviews dataset is my ongoing project, and any other datasets are side projects meant to show different abilities. The Hotel Reviews and Best Western Reviews projects are accessible in different branches with only information from those projects in each branch.
 
 Here are the abilities that each document showcases:
 
