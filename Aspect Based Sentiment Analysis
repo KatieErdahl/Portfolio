@@ -1,0 +1,172 @@
+#Import modules
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+from matplotlib import rcParams
+from typing import DefaultDict
+from textblob import TextBlob
+from os import path
+import spacy
+nlp = spacy.load("en_core_web_sm")
+import warnings
+warnings.filterwarnings("ignore")
+from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.feature_extraction import text
+from spacytextblob.spacytextblob import SpacyTextBlob
+spacy_text_blob = SpacyTextBlob(nlp)
+nlp.add_pipe("spacytextblob")
+from PIL import Image
+import wordcloud
+import nltk
+from nltk.sentiment.vader import SentimentIntensityAnalyzer
+from nltk.corpus import stopwords
+from nltk.tokenize import word_tokenize
+from nltk.stem import WordNetLemmatizer
+nltk.download('all')
+nltk.download('punkt')
+nltk.download('stopwords')
+nltk.download('wordnet')
+nltk.download('vader_lexicon')
+import stanfordnlp
+import seaborn as sns
+
+
+#Import .csv file
+Maitrise_Hotel_Edgware_Road_Reviews = pd.read_csv(r'C:\Users\katie\OneDrive\Documents\Data Analysis\BW Reviews UK\Maitrise Hotel Edgware Road.csv', index_col = 0, dtype={
+    'ID': 'int',
+    'Property_ID': 'str',
+    'Review_Date': 'object',
+    'Review_Month': 'int',
+    'Review_Day': 'int',
+    'Review_Total_Negative_Word_Counts': 'int',
+    'Review_Total_Positive_Word_Counts': 'int',
+    'Total_Number_of_Reviews_Reviewer_Has_Given': 'int',
+    'Reviewer_Score': 'float',
+    'Group_Type': 'str',
+    'Trip_Type': 'str',
+    'Room_Type': 'str',
+    'With_a_Pet': 'bool',
+    'Nights_Stayed': 'str',
+    'Mobile_Device_Submit': 'bool',
+    'Negative_Review': 'str',
+    'Positive_Review': 'str'
+}).dropna(inplace=True)
+
+
+#Define Preprocess Text
+def preprocess_text(text):
+    tokens = word_tokenize(text.lower())
+    filtered_tokens = [token for token in tokens if token not in stopwords.words('english')]
+    lemmatizer = WordNetLemmatizer()
+    lemmatized_tokens = [lemmatizer.lemmatize(token) for token in filtered_tokens]
+    processed_text = ' '.join(lemmatized_tokens)
+    return processed_text
+
+
+#Use Preprocess Text
+Maitrise_Hotel_Edgware_Road_Reviews['Positive_Review_Processed'] = Maitrise_Hotel_Edgware_Road_Reviews['Positive_Review'].apply(preprocess_text)
+Maitrise_Hotel_Edgware_Road_Reviews['Negative_Review_Processed'] = Maitrise_Hotel_Edgware_Road_Reviews['Negative_Review'].apply(preprocess_text)
+
+
+#Initialize Analyzer
+analyzer = SentimentIntensityAnalyzer()
+
+
+#Define Get Sentiment
+def get_sentiment(text):
+    scores = analyzer.polarity_scores(text)
+    if scores['compound'] >= 0.1:
+        sentiment = "positive"
+    elif scores['compound'] > -0.1 and scores['compound'] < 0.1:
+        sentiment = "neutral"
+    else:
+        sentiment = "negative"
+    return sentiment
+def get_scores(text):
+    scores = analyzer.polarity_scores(text)
+    return scores
+
+
+#Use Get Sentiment
+Maitrise_Hotel_Edgware_Road_Reviews['PR_sentiment'] = Maitrise_Hotel_Edgware_Road_Reviews['Positive_Review_Processed'].apply(get_sentiment)
+Maitrise_Hotel_Edgware_Road_Reviews['PR_scores'] = Maitrise_Hotel_Edgware_Road_Reviews['Positive_Review_Processed'].apply(get_scores)
+Maitrise_Hotel_Edgware_Road_Reviews['PR_positive_score'] = Maitrise_Hotel_Edgware_Road_Reviews['PR_scores'].apply(lambda txt: txt['pos'])
+Maitrise_Hotel_Edgware_Road_Reviews['PR_neutral_score'] = Maitrise_Hotel_Edgware_Road_Reviews['PR_scores'].apply(lambda txt: txt['neu'])
+Maitrise_Hotel_Edgware_Road_Reviews['PR_negative_score'] = Maitrise_Hotel_Edgware_Road_Reviews['PR_scores'].apply(lambda txt: txt['neg'])
+Maitrise_Hotel_Edgware_Road_Reviews['PR_compound_score'] = Maitrise_Hotel_Edgware_Road_Reviews['PR_scores'].apply(lambda txt: txt['compound'])
+Maitrise_Hotel_Edgware_Road_Reviews['NR_sentiment'] = Maitrise_Hotel_Edgware_Road_Reviews['Negative_Review_Processed'].apply(get_sentiment)
+Maitrise_Hotel_Edgware_Road_Reviews['NR_scores'] = Maitrise_Hotel_Edgware_Road_Reviews['Negative_Review_Processed'].apply(get_scores)
+Maitrise_Hotel_Edgware_Road_Reviews['NR_positive_score'] = Maitrise_Hotel_Edgware_Road_Reviews['NR_scores'].apply(lambda txt: txt['pos'])
+Maitrise_Hotel_Edgware_Road_Reviews['NR_neutral_score'] = Maitrise_Hotel_Edgware_Road_Reviews['NR_scores'].apply(lambda txt: txt['neu'])
+Maitrise_Hotel_Edgware_Road_Reviews['NR_negative_score'] = Maitrise_Hotel_Edgware_Road_Reviews['NR_scores'].apply(lambda txt: txt['neg'])
+Maitrise_Hotel_Edgware_Road_Reviews['NR_compound_score'] = Maitrise_Hotel_Edgware_Road_Reviews['NR_scores'].apply(lambda txt: txt['compound'])
+Boltons_London_Kensington_Reviews.to_csv(r'C:\Users\katie\OneDrive\Documents\New\Boltons_London_Kensington_sent_analysis_full_separated.csv')
+
+
+#Define Aspect Extraction Function
+def aspect_extraction(lists_of_reviews): 
+    aspects2 = []
+    descriptions = []
+    polarity2 = []
+    subjectivity2 = []
+    combination_count = {}
+
+    for item_reviews in lists_of_reviews:
+        aspects = []
+        description = []
+        polarity = []
+        subjectivity = []
+    
+        for review in item_reviews.split('. '):
+
+            doc = nlp(review)
+            for token in doc:
+                if token.dep_ == 'nsubj' and token.pos_ =='NOUN':
+                    target = token.text
+                    descriptive_item = ' '
+
+                    for mini_token in token.children:
+                        if mini_token.pos_ == 'ADJ':
+                            added_terms = ' '
+
+                            for mini_mini_token in mini_token.children:
+                                if mini_mini_token.pos_ != 'ADV':
+                                    added_terms += mini_mini_token.text + ' '
+
+                            if added_terms:
+                                descriptive_item = added_terms + mini_token.text
+
+                    if target and descriptive_item:
+                        sentiment = TextBlob(descriptive_item).sentiment
+
+                        if sentiment.polarity !=0 or sentiment.subjectivity !=0:
+                            aspects.append(target)
+                            description.append(descriptive_item)
+                            polarity.append(sentiment.polarity)
+                            subjectivity.append(sentiment.subjectivity)
+    
+            aspects2.extend(aspects)
+            descriptions.extend(description)
+            polarity2.extend(polarity)
+            subjectivity2.extend(subjectivity)
+
+            for aspect, desc, pol, sub in zip(aspects, description, polarity, subjectivity):
+                key = (aspect, desc, pol, sub)
+                combination_count[key] = combination_count.get(key, 0) + 1
+
+    data = {'aspect': aspects2, 'description': descriptions, 'polarity': polarity2, 'subjectivity': subjectivity2}
+    df = pd.DataFrame(data)
+    
+    df['count'] = [combination_count[(row['aspect'], row['description'], row['polarity'], row['subjectivity'])] for _, row in df.iterrows()]
+    
+    return df
+
+
+#Use Aspect Extraction Function
+Maitrise_Hotel_Edgware_Road_NR = Maitrise_Hotel_Edgware_Road_Reviews['Negative_Review'].to_list()
+Maitrise_Hotel_Edgware_Road_PR = Maitrise_Hotel_Edgware_Road_Reviews['Positive_Review'].to_list()
+Maitrise_Hotel_Edgware_Road_NR_ABSA = aspect_extraction(Maitrise_Hotel_Edgware_Road_NR)
+Maitrise_Hotel_Edgware_Road_PR_ABSA = aspect_extraction(Maitrise_Hotel_Edgware_Road_PR)
+Maitrise_Hotel_Edgware_Road_NR_ABSA.to_csv(r'C:\Users\katie\OneDrive\Documents\Data Analysis\BW Reviews UK\Maitrise_Hotel_Edgware_Road_NR_ABSA.csv')
+Maitrise_Hotel_Edgware_Road_PR_ABSA.to_csv(r'C:\Users\katie\OneDrive\Documents\Data Analysis\BW Reviews UK\Maitrise_Hotel_Edgware_Road_PR_ABSA.csv')
+
