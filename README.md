@@ -7,7 +7,7 @@ The Hotel Reviews dataset was my first project, the Best Western Reviews dataset
 
 Here are the abilities that each document showcases:
 
-Early Departures Checker - My Job: Applying data transformation skills in Excel to solve a problem for myself and my colleagues that has been a problem since long before I started. As far as I know, there has never been a good solution, unitl now. 
+Early Departures Checker - My Job: Applying data transformation skills in Excel to solve a problem for myself and my colleagues that has been a problem since long before I started. As far as I know, there has never been a good solution, until now. 
 
 Cleaned Reviews - Hotel Reviews: Cleaning data in excel, with a sheet called changelog to see what changes were made between each version.
 
